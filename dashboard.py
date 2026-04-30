@@ -3,75 +3,57 @@ import pandas as pd
 import plotly.express as px
 
 # Set Page Config
+# Set Page Config
 st.set_page_config(page_title="Retail Performance Dashboard", layout="wide")
 
-# --- CSS INJECTION: GRADIENT, CYAN BUTTON, & SLATE TEXT ---
+# --- THE DEFINITIVE CSS: GRADIENT, GLASSMORPHISM, & BUTTON FIXES ---
 st.markdown("""
 <style>
-
-/* 🔥 HEADER FIX (transparent but functional) */
+/* 1. Header Transparency */
 header[data-testid="stHeader"] {
     background: transparent !important;
-    box-shadow: none !important;
 }
 
-/* Background */
+/* 2. FORCED Gradient Background (Navy to Black) */
 .stApp {
-    background: linear-gradient(180deg, #021d52 0%, #050a14 45%, #000000 100%);
+    background: linear-gradient(180deg, #021d52 0%, #050a14 45%, #000000 100%) !important;
+    background-attachment: fixed !important;
 }
 
-/* Sidebar */
+/* 3. Sidebar Glassmorphism */
 [data-testid="stSidebar"] {
-    background-color: rgba(22, 29, 47, 0.95);
+    background-color: rgba(22, 29, 47, 0.95) !important;
+    backdrop-filter: blur(10px);
 }
 
-/* 🔥 WHITE SIDEBAR ARROW */
+/* 4. THE SIDEBAR ARROW - High Contrast White Circle with Black Icon */
 button[data-testid="stSidebarCollapseButton"] {
     background-color: #ffffff !important;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
+    border-radius: 50% !important;
+    width: 34px !important;
+    height: 34px !important;
+    display: flex !important;
+    box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.4) !important;
 }
 
-/* Arrow icon */
 button[data-testid="stSidebarCollapseButton"] svg {
     fill: #000000 !important;
 }
 
-/* Optional hover */
-button[data-testid="stSidebarCollapseButton"]:hover {
-    background-color: #e6e6e6 !important;
-}
+/* 5. Text & Metric Colors */
+h1, h2, h3 { color: #c6cdcf !important; }
+[data-testid="stSidebar"] * { color: #ffffff !important; }
+[data-testid="stMetricValue"] { color: #7c9cff !important; font-weight: bold; }
 
-/* Text */
-h3 {
-    color: #c6cdcf;
-}
-
-/* Sidebar text */
-[data-testid="stSidebar"] * {
-    color: #ffffff;
-}
-
-/* KPI numbers */
-[data-testid="stMetricValue"] {
-    color: #7c9cff;
-}
-
-/* Dataframe text */
-div[data-testid="stDataFrame"] * {
+/* 6. TABLE TEXT COLOR FIX (#c6cdcf) */
+[data-testid="stTable"] td, [data-testid="stTable"] th {
     color: #c6cdcf !important;
 }
 
-/* Remove footer */
-footer, #MainMenu {
-    display: none;
+/* 7. Hide Streamlit Branding & Footer */
+footer, #MainMenu, [data-testid="stDecoration"], .stDeployButton {
+    display: none !important;
 }
-
 </style>
 """, unsafe_allow_html=True)
 
