@@ -8,9 +8,23 @@ st.set_page_config(page_title="Retail Performance Dashboard", layout="wide")
 # --- CSS INJECTION TO FORCE DARK THEME ---
 st.markdown("""
     <style>
+    /* Main background and text */
     .stApp { background-color: #0E1117; color: #FAFAFA; }
+    
+    /* Sidebar background */
     [data-testid="stSidebar"] { background-color: #262730; }
+    
+    /* KPI Metric colors */
     [data-testid="stMetricValue"] { color: #00d4ff; }
+    
+    /* MAKE SIDEBAR TITLE AND TEXT WHITE */
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3, 
+    [data-testid="stSidebar"] p,
+    [data-testid="stWidgetLabel"] p {
+        color: white !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -25,7 +39,7 @@ def load_data():
     # 1. Convert to datetime
     df['Order_Date'] = pd.to_datetime(df['Order_Date'])
 
-    # 2. CREATE THE MISSING COLUMNS
+    # 2. Create Date Columns
     df['Year'] = df['Order_Date'].dt.year
     df['Month'] = df['Order_Date'].dt.month
     df['Month_Name'] = df['Order_Date'].dt.month_name()
@@ -95,7 +109,7 @@ else:
 
     st.markdown("---")
 
-    # Helper function for chart styling - MOVED AND RE-INDENTED
+    # Helper function for chart styling
     def apply_dark_style(fig):
         fig.update_layout(
             template="plotly_dark",
@@ -103,6 +117,7 @@ else:
             plot_bgcolor='rgba(0,0,0,0)',
             font=dict(color="#FAFAFA")
         )
+        # Removes grid lines
         fig.update_xaxes(showgrid=False)
         fig.update_yaxes(showgrid=False)
         return fig
