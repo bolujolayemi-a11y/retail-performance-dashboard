@@ -5,9 +5,15 @@ import plotly.express as px
 # Set Page Config
 st.set_page_config(page_title="Retail Performance Dashboard", layout="wide")
 
-# --- CSS INJECTION TO FORCE DARK THEME ---
+# --- CSS INJECTION TO HIDE TOP BAR & CUSTOMIZE COLORS ---
 st.markdown("""
     <style>
+    /* Hide the Streamlit header (the white bar at the top) */
+    header {visibility: hidden;}
+    
+    /* Hide the Streamlit footer (Made with Streamlit) */
+    footer {visibility: hidden;}
+
     /* Main background and text */
     .stApp { background-color: #0E1117; color: #FAFAFA; }
     
@@ -17,7 +23,7 @@ st.markdown("""
     /* KPI Metric colors */
     [data-testid="stMetricValue"] { color: #00d4ff; }
     
-    /* MAKE SIDEBAR TITLE AND TEXT WHITE */
+    /* Make sidebar text white */
     [data-testid="stSidebar"] h1, 
     [data-testid="stSidebar"] h2, 
     [data-testid="stSidebar"] h3, 
@@ -35,27 +41,19 @@ st.markdown("""
 def load_data():
     df = pd.read_csv('Book1.csv')
     df.columns = df.columns.str.strip()
-
-    # 1. Convert to datetime
     df['Order_Date'] = pd.to_datetime(df['Order_Date'])
-
-    # 2. Create Date Columns
     df['Year'] = df['Order_Date'].dt.year
     df['Month'] = df['Order_Date'].dt.month
     df['Month_Name'] = df['Order_Date'].dt.month_name()
-
-    # 3. Standardize numeric columns
-    numeric_cols = ['Net_Revenue', 'Gross_Profit', 'Discount_Amount',
-                    'COGS', 'Shipping_Cost', 'Unit_Price']
+    numeric_cols = ['Net_Revenue', 'Gross_Profit',
+                    'Discount_Amount', 'COGS', 'Shipping_Cost', 'Unit_Price']
     for col in numeric_cols:
         df[col] = pd.to_numeric(df[col], errors='coerce')
-
     df['Quantity'] = df['Quantity'].fillna(0).astype(int)
     df['Days_to_Ship'] = df['Days_to_Ship'].fillna(0).astype(int)
     df['Customer_Rating'] = pd.to_numeric(
         df['Customer_Rating'], errors='coerce')
     df['Is_Returned_Bool'] = df['Is_Returned'].map({'Yes': 1, 'No': 0})
-
     return df
 
 
@@ -63,29 +61,22 @@ df = load_data()
 
 # --- SIDEBAR FILTERS ---
 st.sidebar.title("Dashboard Filters")
-
 years = sorted(df['Year'].unique())
 year_filter = st.sidebar.multiselect(
     "Select Year", options=years, default=years)
-
 month_order = ['January', 'February', 'March', 'April', 'May', 'June',
                'July', 'August', 'September', 'October', 'November', 'December']
 available_months = [m for m in month_order if m in df['Month_Name'].unique()]
 month_filter = st.sidebar.multiselect(
     "Select Month", options=available_months, default=available_months)
-
 region_filter = st.sidebar.multiselect(
     "Select Region", options=df['Region'].unique(), default=df['Region'].unique())
 category_filter = st.sidebar.multiselect(
     "Select Category", options=df['Category'].unique(), default=df['Category'].unique())
 
 # --- APPLY FILTERS ---
-filtered_df = df[
-    (df['Year'].isin(year_filter)) &
-    (df['Month_Name'].isin(month_filter)) &
-    (df['Region'].isin(region_filter)) &
-    (df['Category'].isin(category_filter))
-].copy()
+filtered_df = df[(df['Year'].isin(year_filter)) & (df['Month_Name'].isin(month_filter)) & (
+    df['Region'].isin(region_filter)) & (df['Category'].isin(category_filter))].copy()
 
 # --- TOP KPI ROW ---
 st.title("📊 Retail Performance Insights")
@@ -109,15 +100,9 @@ else:
 
     st.markdown("---")
 
-    # Helper function for chart styling
     def apply_dark_style(fig):
-        fig.update_layout(
-            template="plotly_dark",
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(0,0,0,0)',
-            font=dict(color="#FAFAFA")
-        )
-        # Removes grid lines
+        fig.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)',
+                          plot_bgcolor='rgba(0,0,0,0)', font=dict(color="#FAFAFA"))
         fig.update_xaxes(showgrid=False)
         fig.update_yaxes(showgrid=False)
         return fig
@@ -132,7 +117,6 @@ else:
         fig_trend = px.line(monthly_rev, x='YearMonth', y='Net_Revenue',
                             title="Monthly Revenue Trend", markers=True)
         st.plotly_chart(apply_dark_style(fig_trend), width='stretch')
-
     with col2:
         rev_cat = filtered_df.groupby('Category')['Net_Revenue'].sum(
         ).reset_index().sort_values('Net_Revenue')
