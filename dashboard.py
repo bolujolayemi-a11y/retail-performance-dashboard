@@ -5,57 +5,55 @@ import plotly.express as px
 # Set Page Config
 st.set_page_config(page_title="Retail Performance Dashboard", layout="wide")
 
-# --- CSS INJECTION: FORCING GRADIENT ON DEPLOYMENT ---
+# --- CSS INJECTION: FORCING GRADIENT & UI SYNC ---
 st.markdown("""
     <style>
-    /* 1. Hide header but keep collapse button area */
+    /* 1. Transparent Header for Toggle Button */
     header[data-testid="stHeader"] {
         background-color: rgba(0,0,0,0) !important;
         border-bottom: none !important;
     }
     
-    /* 2. FORCE the sophisticated Gradient Background on the entire App */
+    /* 2. FORCED Gradient Background */
     .stApp {
         background: linear-gradient(180deg, #021d52 0%, #050a14 45%, #000000 100%) !important;
         background-attachment: fixed !important;
-        color: #FAFAFA !important;
     }
 
-    /* 3. Ensure the main container is transparent to show the gradient */
-    [data-testid="stVerticalBlock"] {
-        background-color: transparent !important;
-    }
-
-    /* 4. Sidebar styling - Glassmorphism */
+    /* 3. Sidebar Glassmorphism */
     [data-testid="stSidebar"] {
         background-color: rgba(38, 39, 48, 0.95) !important;
         backdrop-filter: blur(10px);
     }
     
-    /* 5. White text for Sidebar */
+    /* 4. Sidebar Text & Labels */
     [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, 
     [data-testid="stSidebar"] h3, [data-testid="stSidebar"] p,
     [data-testid="stWidgetLabel"] p {
         color: white !important;
     }
 
-    /* 6. Make sidebar collapse arrow white */
+    /* 5. White Sidebar Collapse Arrow */
     [data-testid="stSidebarCollapseButton"] svg {
         fill: white !important;
         color: white !important;
     }
 
-    /* 7. Metric Styling */
-    [data-testid="stMetricValue"] { color: #00d4ff !important; font-weight: bold; }
+    /* 6. KPI Metric styling */
+    [data-testid="stMetricValue"] { 
+        color: #00d4ff !important; 
+        font-weight: bold !important; 
+    }
     
-    /* 8. Hide decoration and default footer */
+    /* 7. Clean up UI elements */
     [data-testid="stDecoration"] { display: none !important; }
-    footer {visibility: hidden !important;}
-    #MainMenu {visibility: hidden !important;}
-    .stDeployButton {display:none !important;}
+    footer { visibility: hidden !important; }
+    #MainMenu { visibility: hidden !important; }
+    .stDeployButton { display: none !important; }
     </style>
     """, unsafe_allow_html=True)
-# --- STEP 1: DATA LOADING & CLEANING ---
+
+# --- STEP 1: DATA LOADING ---
 
 
 @st.cache_data
@@ -63,19 +61,15 @@ def load_data():
     df = pd.read_csv('Book1.csv')
     df.columns = df.columns.str.strip()
     df['Order_Date'] = pd.to_datetime(df['Order_Date'])
-
-    # Create helper columns for filtering
     df['Year'] = df['Order_Date'].dt.year
     df['Month_Name'] = df['Order_Date'].dt.month_name()
 
-    # Standardize numeric columns
     numeric_cols = ['Net_Revenue', 'Gross_Profit',
                     'Discount_Amount', 'COGS', 'Shipping_Cost', 'Unit_Price']
     for col in numeric_cols:
         df[col] = pd.to_numeric(df[col], errors='coerce')
 
     df['Quantity'] = df['Quantity'].fillna(0).astype(int)
-    df['Days_to_Ship'] = df['Days_to_Ship'].fillna(0).astype(int)
     df['Is_Returned_Bool'] = df['Is_Returned'].map({'Yes': 1, 'No': 0})
     return df
 
@@ -85,29 +79,23 @@ df = load_data()
 # --- SIDEBAR FILTERS ---
 st.sidebar.title("Dashboard Filters")
 with st.sidebar.expander("🎯 Filter Options", expanded=True):
-    # Year Filter
     years = sorted(df['Year'].unique())
-    year_filter = st.multiselect("Select Year", options=years, default=years)
+    year_filter = st.sidebar.multiselect(
+        "Select Year", options=years, default=years)
 
-    # Month Filter
     month_order = ['January', 'February', 'March', 'April', 'May', 'June',
                    'July', 'August', 'September', 'October', 'November', 'December']
     available_months = [
         m for m in month_order if m in df['Month_Name'].unique()]
-    month_filter = st.multiselect(
+    month_filter = st.sidebar.multiselect(
         "Select Month", options=available_months, default=available_months)
 
-    # Region Filter (RE-ADDED)
-    regions = sorted(df['Region'].unique())
-    region_filter = st.multiselect(
-        "Select Region", options=regions, default=regions)
+    region_filter = st.sidebar.multiselect(
+        "Select Region", options=df['Region'].unique(), default=df['Region'].unique())
+    category_filter = st.sidebar.multiselect(
+        "Select Category", options=df['Category'].unique(), default=df['Category'].unique())
 
-    # Category Filter (RE-ADDED)
-    categories = sorted(df['Category'].unique())
-    category_filter = st.multiselect(
-        "Select Category", options=categories, default=categories)
-
-# --- APPLY ALL FILTERS ---
+# Apply Filters
 filtered_df = df[
     (df['Year'].isin(year_filter)) &
     (df['Month_Name'].isin(month_filter)) &
@@ -120,8 +108,7 @@ st.title("📊 Retail Performance Insights")
 st.markdown("---")
 
 if filtered_df.empty:
-    st.warning(
-        "No data available for the selected filters. Please adjust your criteria.")
+    st.warning("No data available. Please adjust filters.")
 else:
     # KPI Row
     k1, k2, k3, k4 = st.columns(4)
@@ -136,20 +123,18 @@ else:
 
     st.markdown("---")
 
-    # Chart Styling Helper
     def apply_dark_style(fig):
         fig.update_layout(
             template="plotly_dark",
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
-            font=dict(color="#FAFAFA"),
-            margin=dict(l=20, r=20, t=40, b=20)
+            font=dict(color="#FAFAFA")
         )
         fig.update_xaxes(showgrid=False, zeroline=False)
         fig.update_yaxes(showgrid=False, zeroline=False)
         return fig
 
-    # Row 1: Charts
+    # Charts Row
     col1, col2 = st.columns((3, 2))
     with col1:
         filtered_df['YearMonth'] = filtered_df['Order_Date'].dt.to_period(
@@ -158,31 +143,14 @@ else:
             'YearMonth')['Net_Revenue'].sum().reset_index()
         fig_trend = px.line(monthly_rev, x='YearMonth', y='Net_Revenue',
                             title="Monthly Revenue Trend", markers=True)
-        st.plotly_chart(apply_dark_style(fig_trend), width='stretch')
+        st.plotly_chart(apply_dark_style(fig_trend), use_container_width=True)
 
     with col2:
         rev_cat = filtered_df.groupby('Category')['Net_Revenue'].sum(
         ).reset_index().sort_values('Net_Revenue')
         fig_cat = px.bar(rev_cat, x='Net_Revenue', y='Category', orientation='h', title="Revenue by Category",
                          color='Net_Revenue', color_continuous_scale='Viridis')
-        st.plotly_chart(apply_dark_style(fig_cat), width='stretch')
-
-    # Row 2: Distribution Charts
-    col3, col4, col5 = st.columns(3)
-    with col3:
-        fig_reg = px.pie(filtered_df, values='Net_Revenue',
-                         names='Region', hole=0.4, title="Revenue by Region")
-        st.plotly_chart(apply_dark_style(fig_reg), width='stretch')
-    with col4:
-        fig_seg = px.pie(filtered_df, names='Customer_Segment',
-                         title="Customer Distribution")
-        st.plotly_chart(apply_dark_style(fig_seg), width='stretch')
-    with col5:
-        aov_seg = filtered_df.groupby('Customer_Segment')[
-            'Net_Revenue'].mean().reset_index()
-        fig_aov = px.bar(aov_seg, x='Customer_Segment',
-                         y='Net_Revenue', title="Average Order Value")
-        st.plotly_chart(apply_dark_style(fig_aov), width='stretch')
+        st.plotly_chart(apply_dark_style(fig_cat), use_container_width=True)
 
 # --- FOOTER ---
 st.markdown("---")
