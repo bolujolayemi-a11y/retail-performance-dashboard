@@ -25,7 +25,7 @@ def load_data():
     # 1. Convert to datetime
     df['Order_Date'] = pd.to_datetime(df['Order_Date'])
 
-    # 2. CREATE THE MISSING COLUMNS HERE
+    # 2. CREATE THE MISSING COLUMNS
     df['Year'] = df['Order_Date'].dt.year
     df['Month'] = df['Order_Date'].dt.month
     df['Month_Name'] = df['Order_Date'].dt.month_name()
@@ -50,23 +50,18 @@ df = load_data()
 # --- SIDEBAR FILTERS ---
 st.sidebar.title("Dashboard Filters")
 
-# 1. Year Filter
 years = sorted(df['Year'].unique())
 year_filter = st.sidebar.multiselect(
     "Select Year", options=years, default=years)
 
-# 2. Month Filter (Using Names is much nicer!)
 month_order = ['January', 'February', 'March', 'April', 'May', 'June',
                'July', 'August', 'September', 'October', 'November', 'December']
 available_months = [m for m in month_order if m in df['Month_Name'].unique()]
 month_filter = st.sidebar.multiselect(
     "Select Month", options=available_months, default=available_months)
 
-# 3. Region Filter
 region_filter = st.sidebar.multiselect(
     "Select Region", options=df['Region'].unique(), default=df['Region'].unique())
-
-# 4. Category Filter
 category_filter = st.sidebar.multiselect(
     "Select Category", options=df['Category'].unique(), default=df['Category'].unique())
 
@@ -82,7 +77,6 @@ filtered_df = df[
 st.title("📊 Retail Performance Insights")
 st.markdown("---")
 
-# Check if filtered_df is empty to avoid more errors
 if filtered_df.empty:
     st.warning("No data available for the selected filters.")
 else:
@@ -101,7 +95,7 @@ else:
 
     st.markdown("---")
 
-    # Helper function for chart styling
+    # Helper function for chart styling - MOVED AND RE-INDENTED
     def apply_dark_style(fig):
         fig.update_layout(
             template="plotly_dark",
@@ -109,6 +103,8 @@ else:
             plot_bgcolor='rgba(0,0,0,0)',
             font=dict(color="#FAFAFA")
         )
+        fig.update_xaxes(showgrid=False)
+        fig.update_yaxes(showgrid=False)
         return fig
 
     # ROW 1: Trend and Bar Chart
@@ -170,6 +166,7 @@ else:
     st.dataframe(ship_analysis.style.format(
         {'Shipping_Perc': '{:.2f}%', 'Shipping_Cost': '${:,.2f}', 'Net_Revenue': '${:,.2f}'}), width='stretch')
 
+# --- FOOTER ---
 st.markdown("---")
 st.markdown(
     """
