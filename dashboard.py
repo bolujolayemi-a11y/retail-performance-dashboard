@@ -5,52 +5,56 @@ import plotly.express as px
 # Set Page Config
 st.set_page_config(page_title="Retail Performance Dashboard", layout="wide")
 
-# --- CSS INJECTION: SOPHISTICATED GRADIENT THEME ---
+# --- CSS INJECTION: FORCING GRADIENT ON DEPLOYMENT ---
 st.markdown("""
     <style>
     /* 1. Hide header but keep collapse button area */
     header[data-testid="stHeader"] {
-        background-color: rgba(0,0,0,0);
-        border-bottom: none;
+        background-color: rgba(0,0,0,0) !important;
+        border-bottom: none !important;
     }
     
-    /* 2. Create the sophisticated Gradient Background (Navy to Black) */
+    /* 2. FORCE the sophisticated Gradient Background on the entire App */
     .stApp {
-        background: linear-gradient(180deg, #021d52 0%, #050a14 45%, #000000 100%);
-        background-attachment: fixed;
-        color: #FAFAFA;
+        background: linear-gradient(180deg, #021d52 0%, #050a14 45%, #000000 100%) !important;
+        background-attachment: fixed !important;
+        color: #FAFAFA !important;
     }
 
-    /* 3. Sidebar styling - Slightly transparent for glassmorphism effect */
+    /* 3. Ensure the main container is transparent to show the gradient */
+    [data-testid="stVerticalBlock"] {
+        background-color: transparent !important;
+    }
+
+    /* 4. Sidebar styling - Glassmorphism */
     [data-testid="stSidebar"] {
-        background-color: rgba(38, 39, 48, 0.95);
+        background-color: rgba(38, 39, 48, 0.95) !important;
         backdrop-filter: blur(10px);
     }
     
-    /* 4. White text for Sidebar elements */
+    /* 5. White text for Sidebar */
     [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, 
     [data-testid="stSidebar"] h3, [data-testid="stSidebar"] p,
     [data-testid="stWidgetLabel"] p {
         color: white !important;
     }
 
-    /* 5. Make sidebar collapse arrow bright white */
+    /* 6. Make sidebar collapse arrow white */
     [data-testid="stSidebarCollapseButton"] svg {
         fill: white !important;
         color: white !important;
     }
 
-    /* 6. Metric Styling */
-    [data-testid="stMetricValue"] { color: #00d4ff; font-weight: bold; }
+    /* 7. Metric Styling */
+    [data-testid="stMetricValue"] { color: #00d4ff !important; font-weight: bold; }
     
-    /* 7. UI Cleanup */
-    [data-testid="stDecoration"] { display: none; }
-    footer {visibility: hidden;}
-    #MainMenu {visibility: hidden;}
-    .stDeployButton {display:none;}
+    /* 8. Hide decoration and default footer */
+    [data-testid="stDecoration"] { display: none !important; }
+    footer {visibility: hidden !important;}
+    #MainMenu {visibility: hidden !important;}
+    .stDeployButton {display:none !important;}
     </style>
     """, unsafe_allow_html=True)
-
 # --- STEP 1: DATA LOADING & CLEANING ---
 
 
