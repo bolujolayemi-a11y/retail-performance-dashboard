@@ -7,68 +7,73 @@ st.set_page_config(page_title="Retail Performance Dashboard", layout="wide")
 
 # --- CSS INJECTION: GRADIENT, CYAN BUTTON, & SLATE TEXT ---
 st.markdown("""
-    <style>
-    /* 1. Transparent Header */
-    header[data-testid="stHeader"] {
-        background-color: rgba(0,0,0,0) !important;
-    }
-    
-    /* 2. THE GRADIENT BACKGROUND */
-    .stApp {
-        background: linear-gradient(180deg, #021d52 0%, #050a14 45%, #000000 100%) !important;
-        background-attachment: fixed !important;
-    }
+<style>
 
-    /* 3. SIDEBAR GLASSMORPHISM */
-    [data-testid="stSidebar"] {
-        background-color: rgba(22, 29, 47, 0.95) !important;
-        backdrop-filter: blur(10px);
-    }
+/* 🔥 HEADER FIX (transparent but functional) */
+header[data-testid="stHeader"] {
+    background: transparent !important;
+    box-shadow: none !important;
+}
 
-    /* 4. THE ARROW - THE "NEON CIRCLE" FIX */
-    button[data-testid="stSidebarCollapseButton"] {
-        background-color: #00d4ff !important;
-        color: #000000 !important;
-        border-radius: 50% !important;
-        width: 35px !important;
-        height: 35px !important;
-        display: flex !important;
-        box-shadow: 0px 0px 20px rgba(0, 212, 255, 1) !important;
-        margin: 10px !important;
-    }
-    button[data-testid="stSidebarCollapseButton"] svg {
-        fill: #000000 !important;
-        width: 22px !important;
-        height: 22px !important;
-    }
+/* Background */
+.stApp {
+    background: linear-gradient(180deg, #021d52 0%, #050a14 45%, #000000 100%);
+}
 
-    /* 5. TABLE TEXT & SUBHEADER COLOR (#c6cdcf) */
-    h3 {
-        color: #c6cdcf !important;
-        padding-top: 2rem !important;
-    }
-    
-    /* Force Dataframe text color */
-    .stDataFrame div[data-testid="stTable"] {
-        color: #c6cdcf !important;
-    }
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background-color: rgba(22, 29, 47, 0.95);
+}
 
-    /* 6. SIDEBAR TEXT */
-    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, 
-    [data-testid="stSidebar"] h3, [data-testid="stSidebar"] p,
-    [data-testid="stWidgetLabel"] p {
-        color: #FFFFFF !important;
-    }
+/* 🔥 WHITE SIDEBAR ARROW */
+button[data-testid="stSidebarCollapseButton"] {
+    background-color: #ffffff !important;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
 
-    /* 7. KPI METRICS */
-    [data-testid="stMetricValue"] { color: #00d4ff !important; font-weight: bold; }
-    
-    /* 8. HIDE DECORATION & FOOTER */
-    [data-testid="stDecoration"], footer, #MainMenu, .stDeployButton {
-        display: none !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+/* Arrow icon */
+button[data-testid="stSidebarCollapseButton"] svg {
+    fill: #000000 !important;
+}
+
+/* Optional hover */
+button[data-testid="stSidebarCollapseButton"]:hover {
+    background-color: #e6e6e6 !important;
+}
+
+/* Text */
+h3 {
+    color: #c6cdcf;
+}
+
+/* Sidebar text */
+[data-testid="stSidebar"] * {
+    color: #ffffff;
+}
+
+/* KPI numbers */
+[data-testid="stMetricValue"] {
+    color: #7c9cff;
+}
+
+/* Dataframe text */
+div[data-testid="stDataFrame"] * {
+    color: #c6cdcf !important;
+}
+
+/* Remove footer */
+footer, #MainMenu {
+    display: none;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 # --- STEP 1: DATA LOADING & CLEANING ---
 
@@ -203,15 +208,19 @@ else:
 
     # Shipping Table with Custom Color #c6cdcf
     st.subheader("Shipping Performance Table")
+
     ship = filtered_df.groupby('Shipping_Method').agg(
-        {'Shipping_Cost': 'sum', 'Net_Revenue': 'sum'}).reset_index()
+        {'Shipping_Cost': 'sum', 'Net_Revenue': 'sum'}
+    ).reset_index()
+
     ship['Shipping_Perc'] = (ship['Shipping_Cost'] / ship['Net_Revenue']) * 100
 
-    # Force table color in the style object
-    styled_ship = ship.style.format({'Shipping_Perc': '{:.2f}%', 'Shipping_Cost': '${:,.2f}', 'Net_Revenue': '${:,.2f}'}).set_properties(
-        **{'color': '#c6cdcf', 'background-color': 'rgba(0,0,0,0)'})
+    # Format columns manually
+    ship['Shipping_Cost'] = ship['Shipping_Cost'].map('${:,.2f}'.format)
+    ship['Net_Revenue'] = ship['Net_Revenue'].map('${:,.2f}'.format)
+    ship['Shipping_Perc'] = ship['Shipping_Perc'].map('{:.2f}%'.format)
 
-    st.dataframe(styled_ship, width='stretch')
+    st.dataframe(ship, width="stretch")
 
 # --- FOOTER ---
 st.markdown("---")
